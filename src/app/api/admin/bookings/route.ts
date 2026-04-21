@@ -9,17 +9,24 @@ export async function GET(req: NextRequest) {
   const dateParam = searchParams.get("date");
   const statusParam = searchParams.get("status");
 
+  const bookingId = searchParams.get("bookingId");
+
+  if (bookingId) {
+    const booking = await prisma.booking.findUnique({
+      where: { id: bookingId },
+      include: { service: { select: { name: true } } },
+    });
+    return NextResponse.json(booking ? [booking] : []);
+  }
+
   const where: {
     startTime?: { gte: Date; lte: Date };
     status?: Status;
   } = {};
 
   if (dateParam) {
-    const date = new Date(dateParam);
-    const startOfDay = new Date(date);
-    startOfDay.setHours(0, 0, 0, 0);
-    const endOfDay = new Date(date);
-    endOfDay.setHours(23, 59, 59, 999);
+    const startOfDay = new Date(`${dateParam}T00:00:00+08:00`);
+    const endOfDay = new Date(startOfDay.getTime() + 24 * 60 * 60_000 - 1);
     where.startTime = { gte: startOfDay, lte: endOfDay };
   }
 

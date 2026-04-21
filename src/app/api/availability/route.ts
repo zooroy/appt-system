@@ -14,7 +14,7 @@ export async function GET(req: NextRequest) {
     );
   }
 
-  const date = new Date(dateParam);
+  const date = new Date(`${dateParam}T00:00:00+08:00`);
   if (isNaN(date.getTime())) {
     return NextResponse.json({ error: "date 格式無效" }, { status: 400 });
   }

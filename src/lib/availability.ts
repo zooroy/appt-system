@@ -1,15 +1,17 @@
 import { prisma } from "./prisma";
 
-function parseTime(timeStr: string, baseDate: Date): Date {
+// Parse "HH:MM" as an offset from Taiwan midnight (UTC), returning a UTC Date.
+// Uses arithmetic instead of setHours() to avoid server timezone dependency.
+function parseTime(timeStr: string, taiwanMidnight: Date): Date {
   const [hours, minutes] = timeStr.split(":").map(Number);
-  const d = new Date(baseDate);
-  d.setHours(hours, minutes, 0, 0);
-  return d;
+  return new Date(taiwanMidnight.getTime() + (hours * 60 + minutes) * 60_000);
 }
 
 export type Slot = { time: Date; available: boolean };
 
 export async function calculateAllSlots(
+  // date must be Taiwan local midnight expressed in UTC
+  // e.g. new Date("2026-04-21T00:00:00+08:00") → 2026-04-20T16:00:00Z
   date: Date,
   serviceDurationMinutes: number
 ): Promise<Slot[]> {
@@ -24,14 +26,17 @@ export async function calculateAllSlots(
   const closeTime = parseTime(closeTimeSetting?.value ?? "18:00", date);
   const intervalMinutes = parseInt(intervalSetting?.value ?? "30", 10);
 
-  const startOfDay = new Date(date);
-  startOfDay.setHours(0, 0, 0, 0);
-  const endOfDay = new Date(date);
-  endOfDay.setHours(23, 59, 59, 999);
+  // Derive the Taiwan date string (date param is Taiwan midnight in UTC, so +8h → UTC midnight)
+  const taiwanDateKey = new Date(date.getTime() + 8 * 60 * 60_000);
+  const taiwanDateStr = taiwanDateKey.toISOString().split("T")[0]; // "YYYY-MM-DD"
 
+  // Compare @db.Date column with exact UTC-midnight value to avoid server-timezone dependency
   const isHoliday = await prisma.holiday.findFirst({
-    where: { date: { gte: startOfDay, lte: endOfDay } },
+    where: { date: new Date(`${taiwanDateStr}T00:00:00.000Z`) },
   });
+
+  const startOfDay = date;
+  const endOfDay = new Date(date.getTime() + 24 * 60 * 60_000 - 1);
 
   if (isHoliday) return [];
 

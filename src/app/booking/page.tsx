@@ -37,7 +37,7 @@ export default function BookingPage() {
 
   useEffect(() => {
     if (!selectedDate || !selectedService) return;
-    const dateStr = selectedDate.toISOString().split("T")[0];
+    const dateStr = `${selectedDate.getFullYear()}-${String(selectedDate.getMonth() + 1).padStart(2, "0")}-${String(selectedDate.getDate()).padStart(2, "0")}`;
     fetch(`/api/availability?date=${dateStr}&serviceId=${selectedService.id}`)
       .then((r) => r.json())
       .then((data: { slots?: { time: string; available: boolean }[] }) => setSlots(data.slots ?? []));
