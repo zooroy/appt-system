@@ -25,7 +25,7 @@
 
 - [x] 4.1 實作可用時段計算策略：`calculateAvailableSlots(date, serviceDurationMinutes)` 函式於 `src/lib/availability.ts`，以 30 分鐘為單位滑動視窗掃描營業時間，排除 Holiday 日期與既有 CONFIRMED 預約（System calculates available time slots based on service duration）
 - [x] 4.2 建立 `GET /api/availability?date=YYYY-MM-DD&serviceId=xxx` API：呼叫計算引擎並回傳可用開始時間陣列（System calculates available time slots based on service duration）
-- [ ] 4.3 撰寫 availability 計算的單元測試，涵蓋：正常日、公休日、全滿場景、服務跨越下班時間的截斷（System prevents double-booking via transactional lock）
+- [x] 4.3 撰寫 availability 計算的單元測試，涵蓋：正常日、公休日、全滿場景、服務跨越下班時間的截斷（System prevents double-booking via transactional lock）
 
 ## 5. 預約核心流程（booking）
 
