@@ -20,7 +20,7 @@ export default function BookingPage() {
   const [selectedService, setSelectedService] = useState<Service | null>(null);
   const [selectedDate, setSelectedDate] = useState<Date | undefined>();
   const [holidays, setHolidays] = useState<Date[]>([]);
-  const [slots, setSlots] = useState<string[]>([]);
+  const [slots, setSlots] = useState<{ time: string; available: boolean }[]>([]);
   const [selectedSlot, setSelectedSlot] = useState<string>("");
   const [form, setForm] = useState({ name: "", phone: "" });
   const [lineUserId, setLineUserId] = useState<string | null>(null);
@@ -40,7 +40,7 @@ export default function BookingPage() {
     const dateStr = selectedDate.toISOString().split("T")[0];
     fetch(`/api/availability?date=${dateStr}&serviceId=${selectedService.id}`)
       .then((r) => r.json())
-      .then((data) => setSlots(data.slots ?? []));
+      .then((data: { slots?: { time: string; available: boolean }[] }) => setSlots(data.slots ?? []));
   }, [selectedDate, selectedService]);
 
   const isHoliday = (date: Date) =>
@@ -86,7 +86,7 @@ export default function BookingPage() {
         <div className="space-y-3">
           {services.length === 0 && <p className="text-muted-foreground text-center">目前無可預約的服務</p>}
           {services.map((s) => (
-            <Card key={s.id} className={`cursor-pointer transition-all ${selectedService?.id === s.id ? "border-primary" : ""}`} onClick={() => setSelectedService(s)}>
+            <Card key={s.id} className={`cursor-pointer transition-all ${selectedService?.id === s.id ? "border-primary border-2 bg-primary/10" : ""}`} onClick={() => setSelectedService(s)}>
               <CardContent className="flex items-center justify-between p-4">
                 <div>
                   <p className="font-medium">{s.name}</p>
@@ -128,11 +128,17 @@ export default function BookingPage() {
         <div className="space-y-4">
           <h2 className="font-medium">可用時段</h2>
           {slots.length === 0 && <p className="text-muted-foreground">當日無可用時段</p>}
+          {slots.length > 0 && slots.every((s) => !s.available) && <p className="text-muted-foreground">當日時段已全數預約完畢</p>}
           <div className="grid grid-cols-3 gap-2">
             {slots.map((slot) => {
-              const t = new Date(slot).toLocaleTimeString("zh-TW", { hour: "2-digit", minute: "2-digit", hour12: false });
+              const t = new Date(slot.time).toLocaleTimeString("zh-TW", { hour: "2-digit", minute: "2-digit", hour12: false });
               return (
-                <Button key={slot} variant={selectedSlot === slot ? "default" : "outline"} onClick={() => setSelectedSlot(slot)}>
+                <Button
+                  key={slot.time}
+                  variant={selectedSlot === slot.time ? "default" : "outline"}
+                  disabled={!slot.available}
+                  onClick={() => slot.available && setSelectedSlot(slot.time)}
+                >
                   {t}
                 </Button>
               );

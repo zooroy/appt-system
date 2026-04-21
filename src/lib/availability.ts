@@ -7,18 +7,12 @@ function parseTime(timeStr: string, baseDate: Date): Date {
   return d;
 }
 
-function isSameDay(a: Date, b: Date): boolean {
-  return (
-    a.getFullYear() === b.getFullYear() &&
-    a.getMonth() === b.getMonth() &&
-    a.getDate() === b.getDate()
-  );
-}
+export type Slot = { time: Date; available: boolean };
 
-export async function calculateAvailableSlots(
+export async function calculateAllSlots(
   date: Date,
   serviceDurationMinutes: number
-): Promise<Date[]> {
+): Promise<Slot[]> {
   const [openTimeSetting, closeTimeSetting, intervalSetting] =
     await Promise.all([
       prisma.setting.findUnique({ where: { key: "openTime" } }),
@@ -49,7 +43,7 @@ export async function calculateAvailableSlots(
     select: { startTime: true, endTime: true },
   });
 
-  const slots: Date[] = [];
+  const slots: Slot[] = [];
   let cursor = new Date(openTime);
 
   while (cursor.getTime() + serviceDurationMinutes * 60_000 <= closeTime.getTime()) {
@@ -60,12 +54,17 @@ export async function calculateAvailableSlots(
       (b: { startTime: Date; endTime: Date }) => slotStart < b.endTime && slotEnd > b.startTime
     );
 
-    if (!hasConflict) {
-      slots.push(new Date(slotStart));
-    }
-
+    slots.push({ time: new Date(slotStart), available: !hasConflict });
     cursor = new Date(cursor.getTime() + intervalMinutes * 60_000);
   }
 
   return slots;
+}
+
+export async function calculateAvailableSlots(
+  date: Date,
+  serviceDurationMinutes: number
+): Promise<Date[]> {
+  const all = await calculateAllSlots(date, serviceDurationMinutes);
+  return all.filter((s) => s.available).map((s) => s.time);
 }
