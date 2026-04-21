@@ -4,7 +4,7 @@
 - [x] 1.2 初始化 UI 元件庫選型：執行 `pnpm dlx shadcn@latest init --preset b3SReJoXo --template next` 設定 Tailwind CSS + shadcn/ui
 - [x] 1.3 設定 Vercel Postgres 連線，建立 `DATABASE_URL` 環境變數
 - [x] 1.4 建立 Prisma schema：資料庫結構設計（Service、Booking、Holiday、Settings 資料表）
-- [ ] 1.5 撰寫並執行初始 migration，建立所有資料表
+- [x] 1.5 撰寫並執行初始 migration，建立所有資料表
 - [x] 1.6 建立 seed 腳本，預設填入基本營業時間設定（09:00–18:00，間隔 30 分鐘）
 
 ## 2. 服務項目管理（service-catalog）

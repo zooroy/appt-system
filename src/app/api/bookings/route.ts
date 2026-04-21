@@ -34,15 +34,15 @@ export async function POST(req: NextRequest) {
 
   try {
     const booking = await prisma.$transaction(async (tx: typeof prisma) => {
-      const conflict = await tx.$queryRaw<{ count: bigint }[]>`
-        SELECT COUNT(*) as count FROM bookings
-        WHERE status = 'CONFIRMED'
-          AND start_time < ${end}
-          AND end_time > ${start}
-        FOR UPDATE
-      `;
+      const conflict = await tx.booking.findFirst({
+        where: {
+          status: "CONFIRMED",
+          startTime: { lt: end },
+          endTime: { gt: start },
+        },
+      });
 
-      if (Number(conflict[0].count) > 0) {
+      if (conflict) {
         throw new Error("SLOT_CONFLICT");
       }
 
