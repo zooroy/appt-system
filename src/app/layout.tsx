@@ -17,7 +17,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="zh-TW" className={cn("font-sans", inter.variable)}>
-      <body>{children}</body>
+      <body className="bg-muted">{children}</body>
     </html>
   );
 }

@@ -25,6 +25,7 @@ export default function BookingPage() {
   const [form, setForm] = useState({ name: "", phone: "" });
   const [lineUserId, setLineUserId] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   useEffect(() => {
     fetch("/api/services").then((r) => r.json()).then(setServices);
@@ -51,34 +52,45 @@ export default function BookingPage() {
   const handleSubmit = async () => {
     if (!selectedService || !selectedDate || !selectedSlot) return;
     setSubmitting(true);
-    const res = await fetch("/api/bookings", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        customerName: form.name,
-        customerPhone: form.phone,
-        serviceId: selectedService.id,
-        startTime: selectedSlot,
-        lineUserId,
-      }),
-    });
-    setSubmitting(false);
-    if (res.ok) {
-      const booking = await res.json();
-      router.push(`/booking/confirmation?id=${booking.id}`);
+    setSubmitError(null);
+    try {
+      const res = await fetch("/api/bookings", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          customerName: form.name,
+          customerPhone: form.phone,
+          serviceId: selectedService.id,
+          startTime: selectedSlot,
+          lineUserId,
+        }),
+      });
+      if (res.ok) {
+        const booking = await res.json();
+        router.push(`/booking/confirmation?id=${booking.id}`);
+      } else {
+        const data = await res.json().catch(() => ({}));
+        setSubmitError(data.error ?? "預約失敗，請稍後再試");
+      }
+    } catch {
+      setSubmitError("網路錯誤，請確認連線後再試");
+    } finally {
+      setSubmitting(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-background p-4 max-w-lg mx-auto">
+    <div className="min-h-screen p-4 max-w-lg mx-auto">
       <h1 className="text-2xl font-bold mb-2 text-center">線上預約</h1>
+      <Card>
+        <CardContent>
       <div className="flex justify-between mb-6">
         {STEPS.map((label, i) => (
           <div key={i} className="flex flex-col items-center gap-1">
             <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${i <= step ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"}`}>
               {i + 1}
             </div>
-            <span className="text-xs text-muted-foreground hidden sm:block">{label}</span>
+            <span className="text-xs text-muted-foreground text-center">{label}</span>
           </div>
         ))}
       </div>
@@ -86,7 +98,13 @@ export default function BookingPage() {
       {/* Step 0: 選服務 */}
       {step === 0 && (
         <div className="space-y-3">
-          {services.length === 0 && <p className="text-muted-foreground text-center">目前無可預約的服務</p>}
+          {services.length === 0 && (
+            <div className="flex flex-col items-center gap-3 py-12 text-muted-foreground">
+              <svg xmlns="http://www.w3.org/2000/svg" className="w-12 h-12 opacity-40" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+              <p className="font-medium">目前沒有可預約的服務</p>
+              <p className="text-sm">請稍後再試，或聯繫店家了解詳情</p>
+            </div>
+          )}
           {services.map((s) => (
             <Card key={s.id} className={`cursor-pointer transition-all ${selectedService?.id === s.id ? "border-primary border-2 bg-primary/10" : ""}`} onClick={() => setSelectedService(s)}>
               <CardContent className="flex items-center justify-between p-4">
@@ -98,7 +116,7 @@ export default function BookingPage() {
               </CardContent>
             </Card>
           ))}
-          <Button className="w-full mt-4" disabled={!selectedService} onClick={() => setStep(1)}>
+          <Button className="w-full mt-4" size="lg" disabled={!selectedService} onClick={() => setStep(1)}>
             下一步
           </Button>
         </div>
@@ -119,8 +137,8 @@ export default function BookingPage() {
             </CardContent>
           </Card>
           <div className="flex gap-2">
-            <Button variant="outline" className="flex-1" onClick={() => setStep(0)}>上一步</Button>
-            <Button className="flex-1" disabled={!selectedDate} onClick={() => setStep(2)}>下一步</Button>
+            <Button variant="outline" size="lg" className="flex-1" onClick={() => setStep(0)}>上一步</Button>
+            <Button className="flex-1" size="lg" disabled={!selectedDate} onClick={() => setStep(2)}>下一步</Button>
           </div>
         </div>
       )}
@@ -133,10 +151,11 @@ export default function BookingPage() {
           {slots.length > 0 && slots.every((s) => !s.available) && <p className="text-muted-foreground">當日時段已全數預約完畢</p>}
           <div className="grid grid-cols-3 gap-2">
             {slots.map((slot) => {
-              const t = new Date(slot.time).toLocaleTimeString("zh-TW", { hour: "2-digit", minute: "2-digit", hour12: false });
+              const t = new Date(slot.time).toLocaleTimeString("zh-TW", { hour: "2-digit", minute: "2-digit", hour12: false, timeZone: "Asia/Taipei" });
               return (
                 <Button
                   key={slot.time}
+                  size="lg"
                   variant={selectedSlot === slot.time ? "default" : "outline"}
                   disabled={!slot.available}
                   onClick={() => slot.available && setSelectedSlot(slot.time)}
@@ -147,8 +166,8 @@ export default function BookingPage() {
             })}
           </div>
           <div className="flex gap-2">
-            <Button variant="outline" className="flex-1" onClick={() => setStep(1)}>上一步</Button>
-            <Button className="flex-1" disabled={!selectedSlot} onClick={() => setStep(3)}>下一步</Button>
+            <Button size="lg" variant="outline" className="flex-1" onClick={() => setStep(1)}>上一步</Button>
+            <Button size="lg" className="flex-1" disabled={!selectedSlot} onClick={() => setStep(3)}>下一步</Button>
           </div>
         </div>
       )}
@@ -167,16 +186,21 @@ export default function BookingPage() {
           <div className="bg-muted rounded-lg p-4 text-sm space-y-1">
             <p><span className="font-medium">服務：</span>{selectedService?.name}</p>
             <p><span className="font-medium">日期：</span>{selectedDate?.toLocaleDateString("zh-TW")}</p>
-            <p><span className="font-medium">時間：</span>{selectedSlot ? new Date(selectedSlot).toLocaleTimeString("zh-TW", { hour: "2-digit", minute: "2-digit", hour12: false }) : ""}</p>
+            <p><span className="font-medium">時間：</span>{selectedSlot ? new Date(selectedSlot).toLocaleTimeString("zh-TW", { hour: "2-digit", minute: "2-digit", hour12: false, timeZone: "Asia/Taipei" }) : ""}</p>
           </div>
+          {submitError && (
+            <p className="text-sm text-destructive text-center">{submitError}</p>
+          )}
           <div className="flex gap-2">
-            <Button variant="outline" className="flex-1" onClick={() => setStep(2)}>上一步</Button>
-            <Button className="flex-1" disabled={!form.name || !form.phone || submitting} onClick={handleSubmit}>
+            <Button size="lg" variant="outline" className="flex-1" onClick={() => setStep(2)}>上一步</Button>
+            <Button size="lg" className="flex-1" disabled={!form.name || !form.phone || submitting} onClick={handleSubmit}>
               {submitting ? "處理中..." : "確認預約"}
             </Button>
           </div>
         </div>
       )}
+      </CardContent>
+      </Card>
     </div>
   );
 }

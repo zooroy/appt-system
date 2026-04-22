@@ -59,7 +59,7 @@ function ConfirmationContent() {
 
 export default function ConfirmationPage() {
   return (
-    <div className="min-h-screen bg-background p-4 max-w-lg mx-auto">
+    <div className="min-h-screen p-4 max-w-lg mx-auto">
       <h1 className="text-2xl font-bold mb-6 text-center">預約確認</h1>
       <Suspense fallback={<p className="text-center">載入中...</p>}>
         <ConfirmationContent />
