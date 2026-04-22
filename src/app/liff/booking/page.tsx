@@ -20,6 +20,7 @@ export default function LiffBookingPage() {
           if (liff.isLoggedIn()) {
             const profile = await liff.getProfile();
             sessionStorage.setItem("lineUserId", profile.userId);
+            sessionStorage.setItem("lineDisplayName", profile.displayName);
           }
         })
         .catch(console.error)

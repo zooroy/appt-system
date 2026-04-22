@@ -20,11 +20,13 @@ export async function sendBookingConfirmation(
     month: "long",
     day: "numeric",
     weekday: "short",
+    timeZone: "Asia/Taipei",
   });
   const timeStr = booking.startTime.toLocaleTimeString("zh-TW", {
     hour: "2-digit",
     minute: "2-digit",
     hour12: false,
+    timeZone: "Asia/Taipei",
   });
 
   await client.pushMessage({

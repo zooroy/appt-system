@@ -33,6 +33,8 @@ export default function BookingPage() {
     );
     const storedLineUserId = sessionStorage.getItem("lineUserId");
     if (storedLineUserId) setLineUserId(storedLineUserId);
+    const storedDisplayName = sessionStorage.getItem("lineDisplayName");
+    if (storedDisplayName) setForm((f) => ({ ...f, name: storedDisplayName }));
   }, []);
 
   useEffect(() => {
