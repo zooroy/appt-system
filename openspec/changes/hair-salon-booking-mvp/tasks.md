@@ -61,6 +61,6 @@
 ## 9. 部署架構與環境設定
 
 - [x] 9.1 建立 `.env.example` 列出部署架構所有必要環境變數：`LINE_CHANNEL_ACCESS_TOKEN`、`LINE_CHANNEL_SECRET`、`LIFF_ID`、`ADMIN_USERNAME`、`ADMIN_PASSWORD`、`DATABASE_URL`
-- [ ] 9.2 依照部署架構部署至 Vercel，設定環境變數，執行 production migration
-- [ ] 9.3 在 LINE Developers Console 設定 Webhook URL 並驗證簽名驗證正常運作（System validates LINE Webhook signatures）
-- [ ] 9.4 建立 LINE LIFF 應用程式，設定 LIFF URL 指向 `/liff/booking`，更新 `LIFF_ID` 環境變數
+- [x] 9.2 依照部署架構部署至 Vercel，設定環境變數，執行 production migration
+- [x] 9.3 在 LINE Developers Console 設定 Webhook URL 並驗證簽名驗證正常運作（System validates LINE Webhook signatures）
+- [x] 9.4 建立 LINE LIFF 應用程式，設定 LIFF URL 指向 `/liff/booking`，更新 `LIFF_ID` 環境變數

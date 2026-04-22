@@ -33,7 +33,7 @@ export async function POST(req: NextRequest) {
   const end = new Date(start.getTime() + service.durationMinutes * 60_000);
 
   try {
-    const booking = await prisma.$transaction(async (tx: typeof prisma) => {
+    const booking = await prisma.$transaction(async (tx) => {
       const conflict = await tx.booking.findFirst({
         where: {
           status: "CONFIRMED",
