@@ -64,3 +64,15 @@
 - [x] 9.2 依照部署架構部署至 Vercel，設定環境變數，執行 production migration
 - [x] 9.3 在 LINE Developers Console 設定 Webhook URL 並驗證簽名驗證正常運作（System validates LINE Webhook signatures）
 - [x] 9.4 建立 LINE LIFF 應用程式，設定 LIFF URL 指向 `/liff/booking`，更新 `LIFF_ID` 環境變數
+
+## 10. 部署後改善與 UI/UX 優化
+
+- [x] 10.1 修正 Prisma 連線設定：`prisma/schema.prisma` 改用 `POSTGRES_PRISMA_URL`（連線池）+ `POSTGRES_URL_NON_POOLING`（直連），解決 Neon serverless 連線問題
+- [x] 10.2 修正 Vercel build：`package.json` 的 `build` 腳本加入 `prisma generate`，確保 Prisma Client 在部署時正確產生
+- [x] 10.3 修正 LINE push notification 時區：`src/lib/line.ts` 的 `sendBookingConfirmation` 所有日期時間格式化加入 `timeZone: "Asia/Taipei"`
+- [x] 10.4 實作 LIFF 顯示名稱自動填入：`src/app/liff/booking/page.tsx` 在取得 LINE profile 後將 `displayName` 存入 `sessionStorage`；`src/app/booking/page.tsx` 初始化時讀取並自動帶入姓名欄位
+- [x] 10.5 改善可用時段邏輯：`src/lib/availability.ts` 的 `calculateAllSlots` 加入 `isPast` 判斷，當日已過時段自動標記為不可用（`available: false`）
+- [x] 10.6 優化步驟條 UI：`/booking` 頁面步驟指示器加入連接橫線，以 `bg-primary` / `bg-border` 區分已完成與未完成段落
+- [x] 10.7 服務選單改用 Button 元件：`/booking` 步驟一將 Card 替換為 `Button`，選中時切換為 `variant="default"`，符合鍵盤無障礙操作
+- [x] 10.8 新增空狀態設計：服務清單無資料時顯示圖示與提示文字，時段清單無可用時段時顯示對應提示
+- [x] 10.9 新增送出失敗錯誤提示：`/booking` 步驟四送出失敗時在「確認預約」按鈕上方顯示具體錯誤訊息

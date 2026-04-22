@@ -48,6 +48,7 @@ export async function calculateAllSlots(
     select: { startTime: true, endTime: true },
   });
 
+  const now = new Date();
   const slots: Slot[] = [];
   let cursor = new Date(openTime);
 
@@ -58,8 +59,9 @@ export async function calculateAllSlots(
     const hasConflict = existingBookings.some(
       (b: { startTime: Date; endTime: Date }) => slotStart < b.endTime && slotEnd > b.startTime
     );
+    const isPast = slotStart <= now;
 
-    slots.push({ time: new Date(slotStart), available: !hasConflict });
+    slots.push({ time: new Date(slotStart), available: !hasConflict && !isPast });
     cursor = new Date(cursor.getTime() + intervalMinutes * 60_000);
   }
 

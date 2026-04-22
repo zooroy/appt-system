@@ -155,8 +155,10 @@ export default function BookingPage() {
       {step === 2 && (
         <div className="space-y-8">
           <div>
-            {slots.length === 0 && <p className="text-muted-foreground">當日無可用時段</p>}
-            {slots.length > 0 && slots.every((s) => !s.available) && <p className="text-muted-foreground">當日時段已全數預約完畢</p>}
+            <div className="mb-2 text-center">
+              {slots.length === 0 && <p className="text-muted-foreground">當日無可用時段</p>}
+              {slots.length > 0 && slots.every((s) => !s.available) && <p className="text-muted-foreground">當日時段已全數預約完畢</p>}
+            </div>
             <div className="grid grid-cols-3 gap-2">
               {slots.map((slot) => {
                 const t = new Date(slot.time).toLocaleTimeString("zh-TW", { hour: "2-digit", minute: "2-digit", hour12: false, timeZone: "Asia/Taipei" });

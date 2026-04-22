@@ -8,6 +8,11 @@
 - 新增 LINE LIFF 預約入口（嵌入 LINE 官方帳號 Rich Menu）
 - 新增店家後台管理介面（服務項目管理、公休日設定、預約查詢）
 - 預約成功後自動發送 LINE 通知給客戶與店家
+- **部署後修正**：Prisma 改用 `POSTGRES_PRISMA_URL`（連線池）+ `POSTGRES_URL_NON_POOLING`（直連）解決 Neon 連線問題
+- **可用時段改善**：當日已過時段自動 disable，避免客戶選到無效時間
+- **LINE 通知時區修正**：push message 日期時間明確指定 `Asia/Taipei` 時區
+- **LIFF 顯示名稱自動填入**：預約表單自動帶入 LINE 顯示名稱
+- **UI/UX 改善**：步驟條連接線、服務選單改用 Button、空狀態設計、確認頁加入行事曆功能、送出失敗錯誤提示
 
 ## Non-Goals (optional)
 
