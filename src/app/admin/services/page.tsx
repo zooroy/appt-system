@@ -2,10 +2,19 @@
 
 import { useEffect, useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import { Field, FieldLabel } from '@/components/ui/field';
+import { Switch } from '@/components/ui/switch';
+import { Trash2 } from 'lucide-react';
+import {
+  Item,
+  ItemActions,
+  ItemContent,
+  ItemDescription,
+  ItemGroup,
+  ItemTitle,
+} from '@/components/ui/item';
 
 type Service = {
   id: string;
@@ -63,41 +72,56 @@ export default function AdminServicesPage() {
     }
   };
 
-  return (
-    <div className="min-h-screen bg-background p-4 max-w-2xl mx-auto">
-      <h1 className="text-2xl font-bold mb-6">服務項目管理</h1>
+  const activate = async (id: string) => {
+    await fetch(`/api/admin/services/${id}/activate`, { method: 'PATCH' });
+    fetchServices();
+  };
 
+  const deleteService = async (id: string) => {
+    if (!confirm('確定要刪除此服務？')) return;
+    const res = await fetch(`/api/admin/services/${id}`, { method: 'DELETE' });
+    if (res.ok) fetchServices();
+    else {
+      const data = await res.json();
+      alert(data.error);
+    }
+  };
+
+  return (
+    <div className="p-4 max-w-2xl mx-auto">
       <Card className="mb-6">
-        <CardContent className="p-4 space-y-3">
-          <h2 className="font-medium">新增服務</h2>
-          <div className="space-y-2">
-            <Label>服務名稱</Label>
-            <Input
-              value={form.name}
-              onChange={(e) => setForm({ ...form, name: e.target.value })}
-              placeholder="剪髮"
-            />
+        <CardContent className="space-y-3">
+          <h2 className="text-lg font-semibold text-center">新增服務</h2>
+          <div className="flex gap-3">
+            <Field className="flex-1">
+              <FieldLabel>服務名稱</FieldLabel>
+              <Input
+                value={form.name}
+                onChange={(e) => setForm({ ...form, name: e.target.value })}
+                placeholder="剪髮"
+              />
+            </Field>
+            <Field className="flex-1">
+              <FieldLabel>時長（分鐘）</FieldLabel>
+              <Input
+                type="number"
+                value={form.durationMinutes}
+                onChange={(e) =>
+                  setForm({ ...form, durationMinutes: e.target.value })
+                }
+                placeholder="60"
+              />
+            </Field>
           </div>
-          <div className="space-y-2">
-            <Label>時長（分鐘）</Label>
-            <Input
-              type="number"
-              value={form.durationMinutes}
-              onChange={(e) =>
-                setForm({ ...form, durationMinutes: e.target.value })
-              }
-              placeholder="60"
-            />
-          </div>
-          <div className="space-y-2">
-            <Label>說明（選填）</Label>
+          <Field>
+            <FieldLabel>說明（選填）</FieldLabel>
             <Input
               value={form.description}
               onChange={(e) =>
                 setForm({ ...form, description: e.target.value })
               }
             />
-          </div>
+          </Field>
           {error && <p className="text-destructive text-sm">{error}</p>}
           <Button
             onClick={createService}
@@ -108,39 +132,46 @@ export default function AdminServicesPage() {
         </CardContent>
       </Card>
 
-      <div className="space-y-3">
-        {services.map((s) => (
-          <Card key={s.id}>
-            <CardContent className="p-4 flex justify-between items-center">
-              <div>
-                <p className="font-medium">{s.name}</p>
-                {s.description && (
-                  <p className="text-sm text-muted-foreground">
-                    {s.description}
-                  </p>
-                )}
-                <Badge variant="secondary" className="mt-1">
-                  {s.durationMinutes} 分鐘
-                </Badge>
-              </div>
-              <div className="flex items-center gap-2">
-                <Badge variant={s.isActive ? 'default' : 'secondary'}>
-                  {s.isActive ? '啟用' : '停用'}
-                </Badge>
-                {s.isActive && (
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => deactivate(s.id)}
-                  >
-                    停用
-                  </Button>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+      <Card>
+        <CardContent className="space-y-3">
+          <h2 className="text-lg font-semibold text-center">服務項目</h2>
+          {services.length === 0 ? (
+            <p className="text-muted-foreground text-center py-8">
+              尚無服務項目
+            </p>
+          ) : (
+            <ItemGroup>
+              {services.map((s) => (
+                <Item key={s.id} variant="outline">
+                  <ItemContent className={s.isActive ? '' : 'opacity-50'}>
+                    <ItemTitle>{s.name}</ItemTitle>
+                    <ItemDescription>
+                      {s.durationMinutes} 分鐘
+                      {s.description && ` · ${s.description}`}
+                    </ItemDescription>
+                  </ItemContent>
+                  <ItemActions>
+                    <Switch
+                      checked={s.isActive}
+                      onCheckedChange={(checked) =>
+                        checked ? activate(s.id) : deactivate(s.id)
+                      }
+                    />
+                    <Button
+                      size="icon"
+                      variant="ghost"
+                      className="text-destructive hover:text-destructive"
+                      onClick={() => deleteService(s.id)}
+                    >
+                      <Trash2 className="size-4" />
+                    </Button>
+                  </ItemActions>
+                </Item>
+              ))}
+            </ItemGroup>
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 }

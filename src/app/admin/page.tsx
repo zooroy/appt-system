@@ -11,16 +11,16 @@ import {
 } from '@/components/ui/item';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import Link from 'next/link';
 import { Card, CardContent } from '@/components/ui/card';
-import { Calendar } from '@/components/ui/calendar';
 import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover';
-import { CalendarIcon } from 'lucide-react';
-import { cn } from '@/lib/utils';
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Field, FieldLabel } from '@/components/ui/field';
+import { DatePicker } from '@/components/date-picker';
 
 type Booking = {
   id: string;
@@ -35,7 +35,6 @@ type Booking = {
 export default function AdminPage() {
   const today = new Date();
   const [date, setDate] = useState<Date>(today);
-  const [calendarOpen, setCalendarOpen] = useState(false);
   const [status, setStatus] = useState('');
   const [bookings, setBookings] = useState<Booking[]>([]);
 
@@ -45,7 +44,7 @@ export default function AdminPage() {
 
   const fetchBookings = () => {
     const params = new URLSearchParams({ date: dateString });
-    if (status) params.set('status', status);
+    if (status && status !== 'ALL') params.set('status', status);
     fetch(`/api/admin/bookings?${params}`)
       .then((r) => r.json())
       .then(setBookings);
@@ -61,58 +60,31 @@ export default function AdminPage() {
   };
 
   return (
-    <div className="min-h-screen p-4 max-w-2xl mx-auto">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">預約管理</h1>
-        <nav className="flex gap-2 text-sm">
-          <Link href="/admin/services" className="text-primary underline">
-            服務
-          </Link>
-          <Link href="/admin/holidays" className="text-primary underline">
-            公休日
-          </Link>
-          <Link href="/admin/settings" className="text-primary underline">
-            設定
-          </Link>
-        </nav>
-      </div>
-
+    <div className="p-4 max-w-2xl mx-auto">
       <Card>
-        <CardContent>
-          <div className="flex gap-2 mb-4">
-            <Popover open={calendarOpen} onOpenChange={setCalendarOpen}>
-              <PopoverTrigger asChild>
-                <Button
-                  variant="outline"
-                  className={cn('flex-1 justify-start text-left font-normal')}
-                >
-                  <CalendarIcon className="mr-2 size-4" />
-                  {dateString}
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0" align="start">
-                <Calendar
-                  mode="single"
-                  selected={date}
-                  onSelect={(d) => {
-                    if (d) {
-                      setDate(d);
-                      setCalendarOpen(false);
-                    }
-                  }}
-                  initialFocus
-                />
-              </PopoverContent>
-            </Popover>
-            <select
-              value={status}
-              onChange={(e) => setStatus(e.target.value)}
-              className="border rounded-md px-3 text-sm"
-            >
-              <option value="">全部狀態</option>
-              <option value="CONFIRMED">已確認</option>
-              <option value="CANCELLED">已取消</option>
-            </select>
+        <CardContent className="space-y-3">
+          <h2 className="text-lg font-semibold text-center">預約管理</h2>
+          <div className="flex gap-3 mb-4">
+            <Field className="flex-2">
+              <FieldLabel>日期</FieldLabel>
+              <DatePicker value={date} onChange={setDate} />
+            </Field>
+            <Field className="flex-1">
+              <FieldLabel>狀態</FieldLabel>
+              <Select
+                value={status || 'ALL'}
+                onValueChange={(v) => setStatus(v === 'ALL' ? '' : v)}
+              >
+                <SelectTrigger className="w-32">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="ALL">全部狀態</SelectItem>
+                  <SelectItem value="CONFIRMED">已確認</SelectItem>
+                  <SelectItem value="CANCELLED">已取消</SelectItem>
+                </SelectContent>
+              </Select>
+            </Field>
           </div>
 
           {bookings.length === 0 ? (
