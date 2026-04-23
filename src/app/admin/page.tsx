@@ -11,9 +11,16 @@ import {
 } from '@/components/ui/item';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import Link from 'next/link';
 import { Card, CardContent } from '@/components/ui/card';
+import { Calendar } from '@/components/ui/calendar';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover';
+import { CalendarIcon } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 type Booking = {
   id: string;
@@ -26,13 +33,18 @@ type Booking = {
 };
 
 export default function AdminPage() {
-  const today = new Date().toISOString().split('T')[0];
-  const [date, setDate] = useState(today);
+  const today = new Date();
+  const [date, setDate] = useState<Date>(today);
+  const [calendarOpen, setCalendarOpen] = useState(false);
   const [status, setStatus] = useState('');
   const [bookings, setBookings] = useState<Booking[]>([]);
 
+  const dateString = date.toLocaleDateString('sv-SE', {
+    timeZone: 'Asia/Taipei',
+  });
+
   const fetchBookings = () => {
-    const params = new URLSearchParams({ date });
+    const params = new URLSearchParams({ date: dateString });
     if (status) params.set('status', status);
     fetch(`/api/admin/bookings?${params}`)
       .then((r) => r.json())
@@ -41,7 +53,7 @@ export default function AdminPage() {
 
   useEffect(() => {
     fetchBookings();
-  }, [date, status]);
+  }, [dateString, status]);
 
   const cancelBooking = async (id: string) => {
     await fetch(`/api/admin/bookings/${id}/cancel`, { method: 'PATCH' });
@@ -68,12 +80,30 @@ export default function AdminPage() {
       <Card>
         <CardContent>
           <div className="flex gap-2 mb-4">
-            <Input
-              type="date"
-              value={date}
-              onChange={(e) => setDate(e.target.value)}
-              className="flex-1"
-            />
+            <Popover open={calendarOpen} onOpenChange={setCalendarOpen}>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  className={cn('flex-1 justify-start text-left font-normal')}
+                >
+                  <CalendarIcon className="mr-2 size-4" />
+                  {dateString}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="start">
+                <Calendar
+                  mode="single"
+                  selected={date}
+                  onSelect={(d) => {
+                    if (d) {
+                      setDate(d);
+                      setCalendarOpen(false);
+                    }
+                  }}
+                  initialFocus
+                />
+              </PopoverContent>
+            </Popover>
             <select
               value={status}
               onChange={(e) => setStatus(e.target.value)}
