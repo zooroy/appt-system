@@ -31,7 +31,7 @@ export default function LiffBookingPage() {
   }, [router]);
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center">
+    <div className="min-h-dvh bg-background flex items-center justify-center">
       <p className="text-muted-foreground">載入中...</p>
     </div>
   );

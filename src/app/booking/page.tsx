@@ -91,7 +91,7 @@ export default function BookingPage() {
   };
 
   return (
-    <div className="min-h-screen p-4 max-w-lg mx-auto">
+    <div className="p-4 max-w-lg mx-auto">
       <h1 className="text-2xl font-bold mb-2 text-center">線上預約</h1>
       <Card>
         <CardContent>
