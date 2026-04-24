@@ -93,7 +93,11 @@ export default function BookingPage() {
 
   return (
     <div className="p-4 max-w-lg mx-auto">
-      <h1 className="text-2xl font-bold mb-2 text-center">線上預約</h1>
+      <div className="pb-1">
+        <h1 className="text-2xl font-bold mb-2 text-center font-heading">
+          線上預約
+        </h1>
+      </div>
       <Card>
         <CardContent>
           <div className="flex items-start mb-6">
@@ -165,7 +169,9 @@ export default function BookingPage() {
                       <div>
                         <p className="font-medium">{s.name}</p>
                         {s.description && (
-                          <p className="text-sm text-muted-foreground">{s.description}</p>
+                          <p className="text-sm text-muted-foreground">
+                            {s.description}
+                          </p>
                         )}
                       </div>
                     </div>

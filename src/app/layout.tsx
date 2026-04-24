@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import { Inter } from "next/font/google";
+import { Noto_Sans_TC, Noto_Serif_TC } from "next/font/google";
 import { cn } from "@/lib/utils";
 
-const inter = Inter({subsets:['latin'],variable:'--font-sans'});
+const notoSans = Noto_Sans_TC({ subsets: ['latin'], variable: '--font-sans' });
+const notoSerif = Noto_Serif_TC({ subsets: ['latin'], variable: '--font-heading' });
 
 export const metadata: Metadata = {
   title: "美髮預約系統",
@@ -16,7 +17,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="zh-TW" className={cn("font-sans", inter.variable)}>
+    <html lang="zh-TW" className={cn("font-sans", notoSans.variable, notoSerif.variable)}>
       <body className="bg-muted">{children}</body>
     </html>
   );

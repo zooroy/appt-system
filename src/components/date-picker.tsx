@@ -2,7 +2,11 @@
 
 import { useState } from 'react';
 import { Calendar } from '@/components/ui/calendar';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover';
 import { Button } from '@/components/ui/button';
 import { CalendarIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -24,17 +28,24 @@ export function DatePicker({
 }: DatePickerProps) {
   const [open, setOpen] = useState(false);
 
-  const formatted = value?.toLocaleDateString('sv-SE', { timeZone: 'Asia/Taipei' });
+  const formatted = value?.toLocaleDateString('sv-SE', {
+    timeZone: 'Asia/Taipei',
+  });
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
         <Button
           variant="secondary"
-          className={cn('w-full justify-start text-left font-normal', className)}
+          className={cn(
+            'w-full justify-start text-left font-normal bg-input/50',
+            className,
+          )}
         >
           <CalendarIcon className="mr-2 size-4" />
-          {formatted ?? <span className="text-muted-foreground">{placeholder}</span>}
+          {formatted ?? (
+            <span className="text-muted-foreground">{placeholder}</span>
+          )}
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-auto p-0" align="start">
