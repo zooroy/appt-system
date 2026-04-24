@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -141,27 +142,37 @@ export default function BookingPage() {
                   <p className="text-sm">請稍後再試，或聯繫店家了解詳情</p>
                 </div>
               )}
-              <div className="space-y-3">
+              <RadioGroup
+                value={selectedService?.id ?? ''}
+                onValueChange={(id) => {
+                  const found = services.find((s) => s.id === id);
+                  if (found) setSelectedService(found);
+                }}
+                className="space-y-3"
+              >
                 {services.map((s) => (
-                  <Button
+                  <label
                     key={s.id}
-                    variant={
-                      selectedService?.id === s.id ? 'default' : 'outline'
-                    }
-                    // variant="outline"
-                    className="w-full h-auto justify-between p-4"
-                    onClick={() => setSelectedService(s)}
+                    htmlFor={s.id}
+                    className={`flex items-center justify-between w-full p-4 rounded-md border cursor-pointer transition-colors ${
+                      selectedService?.id === s.id
+                        ? 'border-primary bg-primary/5'
+                        : 'border-border hover:bg-muted/50'
+                    }`}
                   >
-                    <div className="text-left">
-                      <p className="font-medium">{s.name}</p>
-                      {s.description && (
-                        <p className="text-sm opacity-70">{s.description}</p>
-                      )}
+                    <div className="flex items-center gap-3">
+                      <RadioGroupItem value={s.id} id={s.id} />
+                      <div>
+                        <p className="font-medium">{s.name}</p>
+                        {s.description && (
+                          <p className="text-sm text-muted-foreground">{s.description}</p>
+                        )}
+                      </div>
                     </div>
                     <Badge variant="secondary">{s.durationMinutes} 分鐘</Badge>
-                  </Button>
+                  </label>
                 ))}
-              </div>
+              </RadioGroup>
               <Button
                 className="w-full"
                 size="lg"
