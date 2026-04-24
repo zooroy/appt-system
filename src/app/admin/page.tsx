@@ -37,26 +37,24 @@ export default function AdminPage() {
   const [date, setDate] = useState<Date>(today);
   const [status, setStatus] = useState('');
   const [bookings, setBookings] = useState<Booking[]>([]);
+  const [refresh, setRefresh] = useState(0);
 
   const dateString = date.toLocaleDateString('sv-SE', {
     timeZone: 'Asia/Taipei',
   });
 
-  const fetchBookings = () => {
+  useEffect(() => {
     const params = new URLSearchParams({ date: dateString });
     if (status && status !== 'ALL') params.set('status', status);
     fetch(`/api/admin/bookings?${params}`)
       .then((r) => r.json())
-      .then(setBookings);
-  };
-
-  useEffect(() => {
-    fetchBookings();
-  }, [dateString, status]);
+      .then(setBookings)
+      .catch(() => setBookings([]));
+  }, [dateString, status, refresh]);
 
   const cancelBooking = async (id: string) => {
     await fetch(`/api/admin/bookings/${id}/cancel`, { method: 'PATCH' });
-    fetchBookings();
+    setRefresh((r) => r + 1);
   };
 
   return (
@@ -106,12 +104,14 @@ export default function AdminPage() {
                           hour: '2-digit',
                           minute: '2-digit',
                           hour12: false,
+                          timeZone: 'Asia/Taipei',
                         })}{' '}
                         –{' '}
                         {end.toLocaleTimeString('zh-TW', {
                           hour: '2-digit',
                           minute: '2-digit',
                           hour12: false,
+                          timeZone: 'Asia/Taipei',
                         })}
                       </ItemDescription>
                     </ItemContent>

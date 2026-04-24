@@ -34,18 +34,24 @@ export default function BookingPage() {
   const [lineUserId, setLineUserId] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const [loadingServices, setLoadingServices] = useState(true);
 
   useEffect(() => {
-    fetch('/api/services')
-      .then((r) => r.json())
-      .then(setServices);
-    fetch('/api/holidays')
-      .then((r) => r.json())
-      .then((dates: string[]) => setHolidays(dates.map((d) => new Date(d))));
     const storedLineUserId = sessionStorage.getItem('lineUserId');
     if (storedLineUserId) setLineUserId(storedLineUserId);
     const storedDisplayName = sessionStorage.getItem('lineDisplayName');
     if (storedDisplayName) setForm((f) => ({ ...f, name: storedDisplayName }));
+
+    Promise.all([
+      fetch('/api/services').then((r) => r.json()),
+      fetch('/api/holidays').then((r) => r.json()),
+    ])
+      .then(([svcs, dates]: [Service[], string[]]) => {
+        setServices(svcs);
+        setHolidays(dates.map((d) => new Date(d)));
+      })
+      .catch(() => {})
+      .finally(() => setLoadingServices(false));
   }, []);
 
   useEffect(() => {
@@ -55,7 +61,8 @@ export default function BookingPage() {
       .then((r) => r.json())
       .then((data: { slots?: { time: string; available: boolean }[] }) =>
         setSlots(data.slots ?? []),
-      );
+      )
+      .catch(() => setSlots([]));
   }, [selectedDate, selectedService]);
 
   const isHoliday = (date: Date) =>
@@ -126,7 +133,17 @@ export default function BookingPage() {
           {/* Step 0: 選服務 */}
           {step === 0 && (
             <div className="space-y-8">
-              {services.length === 0 && (
+              {loadingServices && (
+                <div className="space-y-3">
+                  {[1, 2, 3].map((i) => (
+                    <div
+                      key={i}
+                      className="h-16 rounded-md bg-muted animate-pulse"
+                    />
+                  ))}
+                </div>
+              )}
+              {!loadingServices && services.length === 0 && (
                 <div className="flex flex-col items-center gap-3 py-12 text-muted-foreground">
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -146,47 +163,51 @@ export default function BookingPage() {
                   <p className="text-sm">請稍後再試，或聯繫店家了解詳情</p>
                 </div>
               )}
-              <RadioGroup
-                value={selectedService?.id ?? ''}
-                onValueChange={(id) => {
-                  const found = services.find((s) => s.id === id);
-                  if (found) setSelectedService(found);
-                }}
-                className="space-y-3"
-              >
-                {services.map((s) => (
-                  <label
-                    key={s.id}
-                    htmlFor={s.id}
-                    className={`flex items-center justify-between w-full p-4 rounded-md border cursor-pointer transition-colors ${
-                      selectedService?.id === s.id
-                        ? 'border-primary bg-primary/5'
-                        : 'border-border hover:bg-muted/50'
-                    }`}
+              {!loadingServices && (
+                <>
+                  <RadioGroup
+                    value={selectedService?.id ?? ''}
+                    onValueChange={(id) => {
+                      const found = services.find((s) => s.id === id);
+                      if (found) setSelectedService(found);
+                    }}
+                    className="space-y-3"
                   >
-                    <div className="flex items-center gap-3">
-                      <RadioGroupItem value={s.id} id={s.id} />
-                      <div>
-                        <p className="font-medium">{s.name}</p>
-                        {s.description && (
-                          <p className="text-sm text-muted-foreground">
-                            {s.description}
-                          </p>
-                        )}
-                      </div>
-                    </div>
-                    <Badge variant="secondary">{s.durationMinutes} 分鐘</Badge>
-                  </label>
-                ))}
-              </RadioGroup>
-              <Button
-                className="w-full"
-                size="lg"
-                disabled={!selectedService}
-                onClick={() => setStep(1)}
-              >
-                下一步
-              </Button>
+                    {services.map((s) => (
+                      <label
+                        key={s.id}
+                        htmlFor={s.id}
+                        className={`flex items-center justify-between w-full p-4 rounded-md border cursor-pointer transition-colors ${
+                          selectedService?.id === s.id
+                            ? 'border-primary bg-primary/5'
+                            : 'border-border hover:bg-muted/50'
+                        }`}
+                      >
+                        <div className="flex items-center gap-3">
+                          <RadioGroupItem value={s.id} id={s.id} />
+                          <div>
+                            <p className="font-medium">{s.name}</p>
+                            {s.description && (
+                              <p className="text-sm text-muted-foreground">
+                                {s.description}
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                        <Badge variant="secondary">{s.durationMinutes} 分鐘</Badge>
+                      </label>
+                    ))}
+                  </RadioGroup>
+                  <Button
+                    className="w-full"
+                    size="lg"
+                    disabled={!selectedService}
+                    onClick={() => setStep(1)}
+                  >
+                    下一步
+                  </Button>
+                </>
+              )}
             </div>
           )}
 

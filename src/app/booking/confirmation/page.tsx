@@ -22,11 +22,12 @@ function ConfirmationContent() {
 
   useEffect(() => {
     if (!id) return;
-    fetch(`/api/admin/bookings?bookingId=${id}`)
+    fetch(`/api/bookings/${id}`)
       .then((r) => r.json())
       .then((data) => {
-        if (Array.isArray(data) && data.length > 0) setBooking(data[0]);
-      });
+        if (data && !data.error) setBooking(data);
+      })
+      .catch(() => {});
   }, [id]);
 
   if (!booking) {
