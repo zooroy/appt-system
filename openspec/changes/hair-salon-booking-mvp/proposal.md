@@ -13,6 +13,11 @@
 - **LINE 通知時區修正**：push message 日期時間明確指定 `Asia/Taipei` 時區
 - **LIFF 顯示名稱自動填入**：預約表單自動帶入 LINE 顯示名稱
 - **UI/UX 改善**：步驟條連接線、服務選單改用 Button、空狀態設計、確認頁加入行事曆功能、送出失敗錯誤提示
+- **後台 UI 全面改版**：新增 Admin 共用 layout（header + 導覽列），各管理頁面改用 shadcn Field/FieldLabel、DatePicker（Calendar + Popover）、Switch、InputGroup 元件
+- **服務刪除功能**：新增 `DELETE /api/admin/services/[id]`（有預約紀錄則拒絕）與啟用 API `PATCH /api/admin/services/[id]/activate`
+- **修正 LIFF 底部多餘空間**：移除 `/booking` 頁面容器的 `min-h-dvh`，消除可滾動空白區域
+- **設定頁面閃爍修正**：初始 state 設為 `null`，資料載入後才渲染表單避免閃爍
+- **主色調更新為藍色系**
 
 ## Non-Goals (optional)
 
@@ -41,8 +46,14 @@
 - Affected specs: `service-catalog`, `availability`, `booking`, `holiday-management`, `line-integration`, `admin-panel`
 - Affected code:
   - `src/app/` — Next.js 頁面（預約流程、後台管理）
+  - `src/app/admin/layout.tsx` — Admin 共用 layout（header + AdminNav）
+  - `src/app/admin/_components/admin-nav.tsx` — 後台導覽元件
   - `src/app/api/` — API Routes（預約、服務、時段、公休日）
+  - `src/app/api/admin/services/[id]/route.ts` — 新增 DELETE handler
+  - `src/app/api/admin/services/[id]/activate/route.ts` — 新增 activate API
+  - `src/components/date-picker.tsx` — 可複用 DatePicker 元件
   - `src/lib/` — 業務邏輯（時段計算、LINE 通知）
   - `prisma/schema.prisma` — 資料庫結構
+  - `src/app/globals.css` — 主色調更新為藍色系
   - `src/app/liff/` — LINE LIFF 入口頁
 - Dependencies: Next.js, PostgreSQL (Prisma ORM), LINE Messaging API SDK, LIFF SDK, Vercel

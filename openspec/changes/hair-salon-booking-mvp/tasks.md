@@ -76,3 +76,18 @@
 - [x] 10.7 服務選單改用 Button 元件：`/booking` 步驟一將 Card 替換為 `Button`，選中時切換為 `variant="default"`，符合鍵盤無障礙操作
 - [x] 10.8 新增空狀態設計：服務清單無資料時顯示圖示與提示文字，時段清單無可用時段時顯示對應提示
 - [x] 10.9 新增送出失敗錯誤提示：`/booking` 步驟四送出失敗時在「確認預約」按鈕上方顯示具體錯誤訊息
+
+## 11. 後台管理 UI/UX 改善
+
+- [x] 11.1 新增 Admin 共用 layout（`src/app/admin/layout.tsx`），包含 header 與 `AdminNav` 導覽元件，移除各頁面重複的 header 程式碼
+- [x] 11.2 新增 `AdminNav` 元件（`src/app/admin/_components/admin-nav.tsx`），使用 `usePathname` 支援當前頁面高亮顯示
+- [x] 11.3 建立可複用 `DatePicker` 元件（`src/components/date-picker.tsx`），整合 shadcn Calendar + Popover，支援 `disabled` 日期規則與 Asia/Taipei 時區顯示
+- [x] 11.4 服務管理頁面（`src/app/admin/services/page.tsx`）改版：使用 Field/FieldLabel、Switch 切換啟用/停用、Trash2 刪除按鈕、Item/ItemGroup 清單 UI
+- [x] 11.5 新增 `PATCH /api/admin/services/[id]/activate` API（`src/app/api/admin/services/[id]/activate/route.ts`）：啟用已停用服務
+- [x] 11.6 新增 `DELETE /api/admin/services/[id]` handler（`src/app/api/admin/services/[id]/route.ts`）：刪除服務，若有預約紀錄則回傳 409 拒絕刪除
+- [x] 11.7 公休日管理頁面（`src/app/admin/holidays/page.tsx`）改版：使用 `DatePicker`，停用已設定日期與過去日期，改用 Item/ItemGroup 清單 UI
+- [x] 11.8 修正公休日日期比對邏輯：統一以 `toLocaleDateString('sv-SE', { timeZone: 'Asia/Taipei' })` 做字串比對，避免 UTC/Asia-Taipei 時區誤差
+- [x] 11.9 系統設定頁面（`src/app/admin/settings/page.tsx`）改版：使用 Field/FieldLabel、InputGroup + InputGroupAddon（Clock 圖示）顯示時間欄位，隱藏原生時間選取圖示
+- [x] 11.10 修正設定頁面閃爍問題：初始 state 設為 `null`，資料載入完成後才渲染表單，避免預設值閃爍
+- [x] 11.11 修正 LIFF 底部多餘空間：移除 `src/app/booking/page.tsx` 容器的 `min-h-dvh`，消除卡片下方可滾動空白區域
+- [x] 11.12 更新主色調為藍色系（`src/app/globals.css`），同步調整 `--primary`、`--chart`、`--sidebar-primary` 等 CSS 變數
