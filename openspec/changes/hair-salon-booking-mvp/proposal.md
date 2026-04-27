@@ -18,6 +18,13 @@
 - **修正 LIFF 底部多餘空間**：移除 `/booking` 頁面容器的 `min-h-dvh`，消除可滾動空白區域
 - **設定頁面閃爍修正**：初始 state 設為 `null`，資料載入後才渲染表單避免閃爍
 - **主色調更新為藍色系**
+- **RSC + Server Actions 全面重構**：所有頁面改為 RSC 直接查詢 Prisma，互動邏輯抽出為 `*-client.tsx`，資料變更透過 Server Actions + `revalidatePath` 處理，移除 `src/lib/fetch.ts`
+- **API Routes 清理**：除 `webhook/line` 外，所有內部 API Routes 已由 Server Actions 取代，統一刪除 15 條路由
+- **Next.js 16+ 最佳實踐**：`middleware.ts` 改名為 `proxy.ts`（`proxy()` / `proxyConfig`）；新增 `global-error.tsx`、`not-found.tsx`；`error.tsx` 補上 `error` 參數；LINE 通知改用 `after()` 確保 serverless 環境執行完成
+- **效能改善**：`next.config.ts` 加入 `optimizePackageImports: ['lucide-react']`，消除 barrel import cold start 開銷
+- **Admin Server Actions 安全驗證**：新增 `src/lib/admin-auth.ts` `verifyAdmin()` helper，所有 admin Server Actions 內部驗證 Basic Auth，防止繞過 proxy 直接呼叫
+- **時區處理統一**：全面改用 `toLocaleDateString('en-CA', { timeZone: 'Asia/Taipei' })` 取代 `setHours`/`toDateString`，消除時區誤差
+- **新增 favicon**：`src/app/favicon.ico`
 
 ## Non-Goals (optional)
 
@@ -48,12 +55,25 @@
   - `src/app/` — Next.js 頁面（預約流程、後台管理）
   - `src/app/admin/layout.tsx` — Admin 共用 layout（header + AdminNav）
   - `src/app/admin/_components/admin-nav.tsx` — 後台導覽元件
-  - `src/app/api/` — API Routes（預約、服務、時段、公休日）
-  - `src/app/api/admin/services/[id]/route.ts` — 新增 DELETE handler
-  - `src/app/api/admin/services/[id]/activate/route.ts` — 新增 activate API
+  - `src/app/api/webhook/line/route.ts` — 保留唯一 API Route（LINE 外部 webhook）
+  - `src/app/booking/actions.ts` — 預約 Server Actions（getAvailability、createBooking）
+  - `src/app/admin/actions.ts` — Admin Server Actions（cancelBooking）
+  - `src/app/admin/holidays/actions.ts` — 公休日 Server Actions
+  - `src/app/admin/services/actions.ts` — 服務 Server Actions
+  - `src/app/admin/settings/actions.ts` — 設定 Server Actions
+  - `src/app/admin/_components/admin-bookings-client.tsx` — 預約管理 Client Component
+  - `src/app/admin/holidays/_components/holidays-client.tsx` — 公休日管理 Client Component
+  - `src/app/admin/services/_components/services-client.tsx` — 服務管理 Client Component
+  - `src/app/admin/settings/_components/settings-client.tsx` — 設定 Client Component
+  - `src/app/global-error.tsx` — Root layout 錯誤邊界
+  - `src/app/not-found.tsx` — 自訂 404 頁面
+  - `src/proxy.ts` — Next.js 16+ proxy（原 middleware.ts）
+  - `src/lib/admin-auth.ts` — Admin Basic Auth 驗證 helper
   - `src/components/date-picker.tsx` — 可複用 DatePicker 元件
   - `src/lib/` — 業務邏輯（時段計算、LINE 通知）
   - `prisma/schema.prisma` — 資料庫結構
   - `src/app/globals.css` — 主色調更新為藍色系
   - `src/app/liff/` — LINE LIFF 入口頁
-- Dependencies: Next.js, PostgreSQL (Prisma ORM), LINE Messaging API SDK, LIFF SDK, Vercel
+  - `src/app/favicon.ico` — 網站 favicon
+  - `next.config.ts` — optimizePackageImports 設定
+- Dependencies: Next.js 16+, PostgreSQL (Prisma ORM), LINE Messaging API SDK, LIFF SDK, Vercel

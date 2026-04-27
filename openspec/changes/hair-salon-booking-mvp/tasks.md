@@ -91,3 +91,44 @@
 - [x] 11.10 修正設定頁面閃爍問題：初始 state 設為 `null`，資料載入完成後才渲染表單，避免預設值閃爍
 - [x] 11.11 修正 LIFF 底部多餘空間：移除 `src/app/booking/page.tsx` 容器的 `min-h-dvh`，消除卡片下方可滾動空白區域
 - [x] 11.12 更新主色調為藍色系（`src/app/globals.css`），同步調整 `--primary`、`--chart`、`--sidebar-primary` 等 CSS 變數
+
+## 12. RSC + Server Actions 全面重構
+
+- [x] 12.1 `src/app/booking/page.tsx` 改為 RSC，直接查詢 Prisma（services、holidays），加入 `export const metadata`，移除 `fetch('/api/services')` 與 `fetch('/api/holidays')`
+- [x] 12.2 建立 `src/app/booking/actions.ts`：`getAvailability`（直接呼叫 calculateAllSlots + Prisma）、`createBooking`（transaction + 衝突檢查 + LINE 通知）
+- [x] 12.3 `src/app/booking/_components/booking-form.tsx` 改用 Server Actions，以 `useTransition` 取代手動 loading state，時區統一改用 `toLocaleDateString('en-CA', { timeZone: 'Asia/Taipei' })`
+- [x] 12.4 建立 `src/app/booking/error.tsx` Error Boundary
+- [x] 12.5 `src/app/admin/page.tsx` 改為 RSC，透過 URL searchParams 驅動日期/狀態篩選，直接查詢 Prisma
+- [x] 12.6 建立 `src/app/admin/_components/admin-bookings-client.tsx`，篩選變更透過 `router.push` 更新 URL params
+- [x] 12.7 建立 `src/app/admin/actions.ts`：`cancelBooking`（Prisma update + revalidatePath）
+- [x] 12.8 `src/app/admin/holidays/page.tsx` 改為 RSC，直接查詢 Prisma，holidays 格式化為 YYYY-MM-DD 字串
+- [x] 12.9 建立 `src/app/admin/holidays/_components/holidays-client.tsx` 與 `actions.ts`（addHoliday、removeHoliday + revalidatePath）
+- [x] 12.10 `src/app/admin/services/page.tsx` 改為 RSC，直接查詢 Prisma
+- [x] 12.11 建立 `src/app/admin/services/_components/services-client.tsx` 與 `actions.ts`（createService、activateService、deactivateService、deleteService + revalidatePath）
+- [x] 12.12 `src/app/admin/settings/page.tsx` 改為 RSC，直接查詢 Prisma，傳入 settings props
+- [x] 12.13 建立 `src/app/admin/settings/_components/settings-client.tsx` 與 `actions.ts`（saveSettings + revalidatePath）
+- [x] 12.14 刪除 `src/lib/fetch.ts`（RSC 不再需要 HTTP fetch wrapper）
+
+## 13. API Routes 清理
+
+- [x] 13.1 刪除 `src/app/api/admin/` 下所有路由（bookings、holidays、services、settings）共 9 條，已由 Server Actions 取代
+- [x] 13.2 刪除 `src/app/api/availability/route.ts`，已由 `booking/actions.ts` `getAvailability` 取代
+- [x] 13.3 刪除 `src/app/api/bookings/` 下所有路由，已由 Server Actions 取代
+- [x] 13.4 刪除 `src/app/api/holidays/route.ts` 與 `src/app/api/services/route.ts`（專案內無任何呼叫者）
+- [x] 13.5 保留 `src/app/api/webhook/line/route.ts`（LINE 平台外部呼叫，無法改為 Server Action）
+
+## 14. Next.js 16+ 最佳實踐與效能安全改善
+
+- [x] 14.1 `src/middleware.ts` 改名為 `src/proxy.ts`，export 更新為 `proxy()` / `proxyConfig`（Next.js 16+ 規範）
+- [x] 14.2 新增 `src/app/global-error.tsx`，捕捉 root layout 層級錯誤（需含 `<html>` / `<body>`）
+- [x] 14.3 新增 `src/app/not-found.tsx` 自訂 404 頁面
+- [x] 14.4 `src/app/booking/error.tsx` 與 `src/app/admin/error.tsx` 補上 `error: Error & { digest?: string }` 參數
+- [x] 14.5 `src/app/booking/actions.ts` LINE 通知改用 `after()`，確保 serverless 環境 response 後仍執行完成
+- [x] 14.6 `next.config.ts` 加入 `optimizePackageImports: ['lucide-react']`，消除 barrel import cold start 開銷
+- [x] 14.7 建立 `src/lib/admin-auth.ts` `verifyAdmin()` helper，讀取 request headers 驗證 Basic Auth
+- [x] 14.8 所有 admin Server Actions（cancelBooking、addHoliday、removeHoliday、createService、activateService、deactivateService、deleteService、saveSettings）加入 `verifyAdmin()` 呼叫
+- [x] 14.9 `setForm` 全面改用 functional update（`setForm(f => ({ ...f, ... }))`），消除 stale closure 風險（booking-form.tsx、settings-client.tsx、holidays-client.tsx、services-client.tsx）
+
+## 15. 靜態資源
+
+- [x] 15.1 新增 `src/app/favicon.ico`，透過 Next.js 檔名慣例自動注入 `<link>` tag
