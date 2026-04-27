@@ -2,6 +2,7 @@
 
 import { prisma } from '@/lib/prisma';
 import { calculateAllSlots } from '@/lib/availability';
+import { after } from 'next/server';
 import { sendBookingConfirmation } from '@/lib/line';
 
 export async function getAvailability(
@@ -64,7 +65,7 @@ export async function createBooking(data: {
     });
 
     if (lineUserId) {
-      sendBookingConfirmation(lineUserId, booking).catch(console.error);
+      after(() => sendBookingConfirmation(lineUserId, booking).catch(console.error));
     }
 
     return { id: booking.id };

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 
-export function middleware(req: NextRequest) {
+export function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
   if (!pathname.startsWith("/admin")) return NextResponse.next();
@@ -30,6 +30,6 @@ export function middleware(req: NextRequest) {
   return NextResponse.next();
 }
 
-export const config = {
+export const proxyConfig = {
   matcher: ["/admin/:path*"],
 };
