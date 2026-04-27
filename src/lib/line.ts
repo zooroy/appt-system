@@ -11,6 +11,35 @@ type BookingWithService = {
   service: { name: string };
 };
 
+export async function sendBookingCancellation(
+  lineUserId: string,
+  booking: BookingWithService
+): Promise<void> {
+  const dateStr = booking.startTime.toLocaleDateString("zh-TW", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+    weekday: "short",
+    timeZone: "Asia/Taipei",
+  });
+  const timeStr = booking.startTime.toLocaleTimeString("zh-TW", {
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+    timeZone: "Asia/Taipei",
+  });
+
+  await client.pushMessage({
+    to: lineUserId,
+    messages: [
+      {
+        type: "text",
+        text: `❌ 預約已取消\n\n服務：${booking.service.name}\n日期：${dateStr}\n時間：${timeStr}\n預約編號：${booking.id}\n\n如有疑問請聯繫店家。`,
+      },
+    ],
+  });
+}
+
 export async function sendBookingConfirmation(
   lineUserId: string,
   booking: BookingWithService
