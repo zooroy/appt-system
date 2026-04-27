@@ -283,7 +283,7 @@ export function BookingForm({ services, holidays }: Props) {
               <Input
                 id="name"
                 value={form.name}
-                onChange={(e) => setForm({ ...form, name: e.target.value })}
+                onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
                 placeholder="王小明"
               />
             </div>
@@ -293,7 +293,7 @@ export function BookingForm({ services, holidays }: Props) {
                 id="phone"
                 type="tel"
                 value={form.phone}
-                onChange={(e) => setForm({ ...form, phone: e.target.value })}
+                onChange={(e) => setForm((f) => ({ ...f, phone: e.target.value }))}
                 placeholder="0912345678"
               />
             </div>

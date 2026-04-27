@@ -2,11 +2,13 @@
 
 import { prisma } from '@/lib/prisma';
 import { revalidatePath } from 'next/cache';
+import { verifyAdmin } from '@/lib/admin-auth';
 
 export async function addHoliday(form: {
   date: string;
   reason: string;
 }): Promise<{ error?: string }> {
+  await verifyAdmin();
   if (!form.date) return { error: 'date 為必填欄位' };
 
   const parsedDate = new Date(`${form.date}T00:00:00.000Z`);
@@ -25,6 +27,7 @@ export async function addHoliday(form: {
 }
 
 export async function removeHoliday(id: string): Promise<void> {
+  await verifyAdmin();
   await prisma.holiday.delete({ where: { id } });
   revalidatePath('/admin/holidays');
 }

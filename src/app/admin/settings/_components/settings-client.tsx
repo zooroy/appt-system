@@ -53,7 +53,7 @@ export function SettingsClient({ settings }: { settings: Settings }) {
                 <InputGroupInput
                   type="time"
                   value={form.openTime}
-                  onChange={(e) => setForm({ ...form, openTime: e.target.value })}
+                  onChange={(e) => setForm((f) => ({ ...f, openTime: e.target.value }))}
                   className="[&::-webkit-calendar-picker-indicator]:hidden"
                 />
               </InputGroup>
@@ -67,7 +67,7 @@ export function SettingsClient({ settings }: { settings: Settings }) {
                 <InputGroupInput
                   type="time"
                   value={form.closeTime}
-                  onChange={(e) => setForm({ ...form, closeTime: e.target.value })}
+                  onChange={(e) => setForm((f) => ({ ...f, closeTime: e.target.value }))}
                   className="[&::-webkit-calendar-picker-indicator]:hidden"
                 />
               </InputGroup>
@@ -80,7 +80,7 @@ export function SettingsClient({ settings }: { settings: Settings }) {
               value={form.slotIntervalMinutes}
               min={15}
               step={15}
-              onChange={(e) => setForm({ ...form, slotIntervalMinutes: e.target.value })}
+              onChange={(e) => setForm((f) => ({ ...f, slotIntervalMinutes: e.target.value }))}
             />
           </Field>
           {error && <p className="text-destructive text-sm">{error}</p>}

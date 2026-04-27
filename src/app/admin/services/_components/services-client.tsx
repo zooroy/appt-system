@@ -74,7 +74,7 @@ export function ServicesClient({ services }: { services: Service[] }) {
               <FieldLabel>服務名稱</FieldLabel>
               <Input
                 value={form.name}
-                onChange={(e) => setForm({ ...form, name: e.target.value })}
+                onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
                 placeholder="剪髮"
               />
             </Field>
@@ -83,7 +83,7 @@ export function ServicesClient({ services }: { services: Service[] }) {
               <Input
                 type="number"
                 value={form.durationMinutes}
-                onChange={(e) => setForm({ ...form, durationMinutes: e.target.value })}
+                onChange={(e) => setForm((f) => ({ ...f, durationMinutes: e.target.value }))}
                 placeholder="60"
               />
             </Field>
@@ -92,7 +92,7 @@ export function ServicesClient({ services }: { services: Service[] }) {
             <FieldLabel>說明（選填）</FieldLabel>
             <Input
               value={form.description}
-              onChange={(e) => setForm({ ...form, description: e.target.value })}
+              onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
             />
           </Field>
           {error && <p className="text-destructive text-sm">{error}</p>}

@@ -71,7 +71,7 @@ export function HolidaysClient({ holidays }: { holidays: Holiday[] }) {
             <FieldLabel>原因（選填）</FieldLabel>
             <Input
               value={form.reason}
-              onChange={(e) => setForm({ ...form, reason: e.target.value })}
+              onChange={(e) => setForm((f) => ({ ...f, reason: e.target.value }))}
               placeholder="農曆新年"
             />
           </Field>
