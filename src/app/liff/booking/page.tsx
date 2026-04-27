@@ -13,21 +13,21 @@ export default function LiffBookingPage() {
       return;
     }
 
-    import("@line/liff").then(({ default: liff }) => {
-      liff
-        .init({ liffId })
-        .then(async () => {
-          if (liff.isLoggedIn()) {
-            const profile = await liff.getProfile();
-            sessionStorage.setItem("lineUserId", profile.userId);
-            sessionStorage.setItem("lineDisplayName", profile.displayName);
-          }
-        })
-        .catch(console.error)
-        .finally(() => {
-          router.replace("/booking");
-        });
-    });
+    (async () => {
+      try {
+        const { default: liff } = await import("@line/liff");
+        await liff.init({ liffId });
+        if (liff.isLoggedIn()) {
+          const profile = await liff.getProfile();
+          sessionStorage.setItem("lineUserId", profile.userId);
+          sessionStorage.setItem("lineDisplayName", profile.displayName);
+        }
+      } catch (err) {
+        console.error(err);
+      } finally {
+        router.replace("/booking");
+      }
+    })();
   }, [router]);
 
   return (

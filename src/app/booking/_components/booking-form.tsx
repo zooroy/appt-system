@@ -1,7 +1,8 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
+import { getAvailability, createBooking } from '../actions';
 import { Button } from '@/components/ui/button';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Input } from '@/components/ui/input';
@@ -33,9 +34,9 @@ export function BookingForm({ services, holidays }: Props) {
   const [selectedSlot, setSelectedSlot] = useState<string>('');
   const [form, setForm] = useState({ name: '', phone: '' });
   const [lineUserId, setLineUserId] = useState<string | null>(null);
-  const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
-  const [slotsLoading, setSlotsLoading] = useState(false);
+  const [submitting, startSubmitTransition] = useTransition();
+  const [slotsLoading, startSlotsTransition] = useTransition();
 
   const todayStr = useMemo(
     () => new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Taipei' }),
@@ -54,45 +55,31 @@ export function BookingForm({ services, holidays }: Props) {
 
   useEffect(() => {
     if (!selectedDate || !selectedService) return;
-    setSlotsLoading(true);
+    setSlots([]);
     const dateStr = selectedDate.toLocaleDateString('en-CA', { timeZone: 'Asia/Taipei' });
-    fetch(`/api/availability?date=${dateStr}&serviceId=${selectedService.id}`)
-      .then((r) => r.json())
-      .then((data: { slots?: { time: string; available: boolean }[] }) =>
-        setSlots(data.slots ?? []),
-      )
-      .catch(() => setSlots([]))
-      .finally(() => setSlotsLoading(false));
+    startSlotsTransition(async () => {
+      const data = await getAvailability(dateStr, selectedService.id);
+      setSlots(data.slots);
+    });
   }, [selectedDate, selectedService]);
 
-  const handleSubmit = async () => {
+  const handleSubmit = () => {
     if (!selectedService || !selectedDate || !selectedSlot) return;
-    setSubmitting(true);
     setSubmitError(null);
-    try {
-      const res = await fetch('/api/bookings', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          customerName: form.name,
-          customerPhone: form.phone,
-          serviceId: selectedService.id,
-          startTime: selectedSlot,
-          lineUserId,
-        }),
+    startSubmitTransition(async () => {
+      const result = await createBooking({
+        customerName: form.name,
+        customerPhone: form.phone,
+        serviceId: selectedService.id,
+        startTime: selectedSlot,
+        lineUserId,
       });
-      if (res.ok) {
-        const booking = await res.json();
-        router.push(`/booking/confirmation?id=${booking.id}`);
+      if ('error' in result) {
+        setSubmitError(result.error);
       } else {
-        const data = await res.json().catch(() => ({}));
-        setSubmitError(data.error ?? '預約失敗，請稍後再試');
+        router.push(`/booking/confirmation?id=${result.id}`);
       }
-    } catch {
-      setSubmitError('網路錯誤，請確認連線後再試');
-    } finally {
-      setSubmitting(false);
-    }
+    });
   };
 
   return (
