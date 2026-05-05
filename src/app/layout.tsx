@@ -9,6 +9,12 @@ const notoSerif = Noto_Serif_TC({ subsets: ['latin'], variable: '--font-heading'
 export const metadata: Metadata = {
   title: "美髮預約系統",
   description: "線上預約美髮服務",
+  manifest: "/manifest.webmanifest",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "預約系統",
+  },
 };
 
 export default function RootLayout({
