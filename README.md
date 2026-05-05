@@ -18,63 +18,61 @@
 - 取消預約時自動發送 LINE 通知給顧客
 - HTTP Basic Auth 保護
 
-## 技術棧
+## 技術架構
 
-- **框架**：[Next.js](https://nextjs.org/) 16 (App Router)
-- **資料庫**：PostgreSQL + [Prisma](https://www.prisma.io/) 5
-- **LINE 整合**：LINE Messaging API、LINE LIFF
-- **UI**：Tailwind CSS + shadcn/ui
-- **部署**：Vercel
-
-## 本地開發
-
-### 必要條件
-
-- Node.js 18+
-- PostgreSQL
-- pnpm
-
-### 安裝
-
-```bash
-git clone https://github.com/zooroy/appt-system.git
-cd appt-system
-pnpm install
+```
+appt-system/
+├── src/
+│   ├── app/                      # Next.js 16 App Router
+│   │   ├── admin/                # 後台管理（HTTP Basic Auth）
+│   │   │   ├── holidays/         # 公休日管理
+│   │   │   ├── services/         # 服務項目管理
+│   │   │   └── settings/         # 營業時間設定
+│   │   ├── api/webhook/line/     # LINE Messaging API Webhook
+│   │   ├── booking/              # 顧客預約流程
+│   │   │   └── confirmation/     # 預約成功確認頁
+│   │   └── liff/booking/         # LINE LIFF 入口
+│   ├── components/ui/            # shadcn/ui 元件
+│   └── lib/
+│       ├── admin-auth.ts         # Basic Auth 驗證
+│       ├── availability.ts       # 可預約時段計算邏輯
+│       ├── line.ts               # LINE Messaging API / LIFF SDK
+│       └── prisma.ts             # Prisma Client 單例
+└── prisma/
+    ├── schema.prisma             # 資料模型（PostgreSQL）
+    └── migrations/               # 資料庫 migration 紀錄
 ```
 
-### 環境變數
+> 部署於 Vercel，樣式使用 Tailwind CSS。
 
-複製範本並填入實際值：
+### 主要套件
 
-```bash
-cp .env.example .env
-```
+| 類別 | 套件 | 版本 |
+|------|------|------|
+| 框架 | Next.js | 16 |
+| UI 語言 | React | 19 |
+| 資料庫 ORM | Prisma | 5 |
+| 樣式 | Tailwind CSS | 4 |
+| UI 元件 | shadcn/ui + Radix UI | — |
+| LINE 整合 | @line/bot-sdk | 9 |
+| LINE 整合 | @line/liff | 2 |
+| 日期處理 | date-fns | 4 |
+| 日期選擇器 | react-day-picker | 9 |
+| 圖示 | lucide-react | 1 |
+| 測試 | Vitest | 4 |
+| 語言 | TypeScript | 5 |
+
+## 環境變數
 
 | 變數 | 說明 |
 |------|------|
 | `DATABASE_URL` | PostgreSQL 連線字串 |
-| `POSTGRES_PRISMA_URL` | PostgreSQL 連線池 URL（Vercel Postgres / Neon） |
-| `POSTGRES_URL_NON_POOLING` | PostgreSQL 直連 URL（migration 用） |
 | `LINE_CHANNEL_ACCESS_TOKEN` | LINE Messaging API Channel Access Token |
 | `LINE_CHANNEL_SECRET` | LINE Messaging API Channel Secret |
-| `NEXT_PUBLIC_LIFF_ID` | LINE LIFF App ID |
+| `LIFF_ID` | LINE LIFF App ID |
+| `NEXT_PUBLIC_LIFF_ID` | LINE LIFF App ID（前端可讀取） |
 | `ADMIN_USERNAME` | 後台管理帳號 |
 | `ADMIN_PASSWORD` | 後台管理密碼 |
-
-### 資料庫初始化
-
-```bash
-pnpm prisma migrate dev
-pnpm prisma db seed
-```
-
-### 啟動開發伺服器
-
-```bash
-pnpm dev
-```
-
-開啟 [http://localhost:3000](http://localhost:3000)
 
 ## 頁面路由
 
@@ -95,16 +93,21 @@ pnpm dev
 3. 建立 LIFF App，設定端點 URL：`https://your-domain.com/liff/booking`
 4. 將 Channel Access Token、Channel Secret、LIFF ID 填入環境變數
 
-## 部署
+## 操作流程
 
-### Vercel
+### 顧客預約
 
-1. 將 repo 連結至 Vercel
-2. 設定所有環境變數
-3. 執行 production migration：
+1. 進入 `/booking`（或由 LINE 開啟 `/liff/booking`）
+2. 選擇服務項目
+3. 選擇日期（公休日不可選）
+4. 選擇時段（已過或已滿不可選）
+5. 填寫姓名與電話
+6. 送出後跳轉至 `/booking/confirmation`，並收到 LINE 推播通知
 
-```bash
-pnpm prisma migrate deploy
-```
+### 後台管理
 
-Vercel 部署時會自動執行 `prisma generate`（已設定於 `build` 指令）。
+1. 進入 `/admin`，輸入帳密通過 HTTP Basic Auth
+2. 依日期、狀態篩選預約；可取消預約（顧客自動收到 LINE 通知）
+3. 至 `/admin/services` 新增或啟用/停用服務項目
+4. 至 `/admin/holidays` 設定公休日
+5. 至 `/admin/settings` 調整開門/關門時間與預約間隔
