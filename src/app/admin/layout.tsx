@@ -1,4 +1,5 @@
 import { AdminNav } from './_components/admin-nav';
+import { PullToRefresh } from './_components/pull-to-refresh';
 
 export default function AdminLayout({
   children,
@@ -13,7 +14,7 @@ export default function AdminLayout({
           <AdminNav />
         </div>
       </header>
-      {children}
+      <PullToRefresh>{children}</PullToRefresh>
     </div>
   );
 }
