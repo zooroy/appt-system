@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { Noto_Sans_TC, Noto_Serif_TC } from "next/font/google";
 import { cn } from "@/lib/utils";
+import { WebVitals } from "@/components/web-vitals";
 
 const notoSans = Noto_Sans_TC({ subsets: ['latin'], variable: '--font-sans' });
 const notoSerif = Noto_Serif_TC({ subsets: ['latin'], variable: '--font-heading' });
@@ -24,7 +25,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="zh-TW" className={cn("font-sans", notoSans.variable, notoSerif.variable)}>
-      <body className="bg-muted">{children}</body>
+      <body className="bg-muted">
+        <WebVitals />
+        {children}
+      </body>
     </html>
   );
 }
