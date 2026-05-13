@@ -1,7 +1,6 @@
 'use client';
 
-import { useTransition } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, useTransition } from 'react';
 import {
   Item,
   ItemActions,
@@ -22,7 +21,7 @@ import {
 } from '@/components/ui/select';
 import { Field, FieldLabel } from '@/components/ui/field';
 import { DatePicker } from '@/components/date-picker';
-import { cancelBooking } from '../actions';
+import { cancelBooking, getBookings } from '../actions';
 
 type Booking = {
   id: string;
@@ -37,29 +36,42 @@ type Booking = {
 type Props = {
   bookings: Booking[];
   currentDate: string;
-  currentStatus: string;
 };
 
-export function AdminBookingsClient({ bookings, currentDate, currentStatus }: Props) {
-  const router = useRouter();
+export function AdminBookingsClient({ bookings: initialBookings, currentDate: initialDate }: Props) {
+  const [bookings, setBookings] = useState(initialBookings);
+  const [currentDate, setCurrentDate] = useState(initialDate);
+  const [currentStatus, setCurrentStatus] = useState('');
   const [isPending, startTransition] = useTransition();
 
   const handleDateChange = (d: Date) => {
     const dateStr = d.toLocaleDateString('en-CA', { timeZone: 'Asia/Taipei' });
+    setCurrentDate(dateStr);
     const params = new URLSearchParams({ date: dateStr });
     if (currentStatus) params.set('status', currentStatus);
-    router.push(`/admin?${params}`);
+    window.history.replaceState(null, '', `/admin?${params}`);
+    startTransition(async () => {
+      const result = await getBookings(dateStr, currentStatus || undefined);
+      setBookings(result);
+    });
   };
 
   const handleStatusChange = (value: string) => {
+    setCurrentStatus(value);
     const params = new URLSearchParams({ date: currentDate });
     if (value !== 'ALL') params.set('status', value);
-    router.push(`/admin?${params}`);
+    window.history.replaceState(null, '', `/admin?${params}`);
+    startTransition(async () => {
+      const result = await getBookings(currentDate, value !== 'ALL' ? value : undefined);
+      setBookings(result);
+    });
   };
 
   const handleCancel = (id: string) => {
     startTransition(async () => {
       await cancelBooking(id);
+      const result = await getBookings(currentDate, currentStatus || undefined);
+      setBookings(result);
     });
   };
 
@@ -71,16 +83,19 @@ export function AdminBookingsClient({ bookings, currentDate, currentStatus }: Pr
           <div className="flex gap-3 mb-4">
             <Field className="flex-2">
               <FieldLabel>日期</FieldLabel>
-              <DatePicker
-                value={new Date(`${currentDate}T12:00:00+08:00`)}
-                onChange={handleDateChange}
-              />
+              <div className={isPending ? 'pointer-events-none opacity-50' : ''}>
+                <DatePicker
+                  value={new Date(`${currentDate}T12:00:00+08:00`)}
+                  onChange={handleDateChange}
+                />
+              </div>
             </Field>
             <Field className="flex-1">
               <FieldLabel>狀態</FieldLabel>
               <Select
                 value={currentStatus || 'ALL'}
                 onValueChange={handleStatusChange}
+                disabled={isPending}
               >
                 <SelectTrigger className="w-32">
                   <SelectValue />
