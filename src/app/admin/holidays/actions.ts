@@ -23,6 +23,7 @@ export async function addHoliday(form: {
   }
 
   revalidatePath('/admin/holidays');
+  revalidatePath('/booking');
   return {};
 }
 
@@ -30,4 +31,5 @@ export async function removeHoliday(id: string): Promise<void> {
   await verifyAdmin();
   await prisma.holiday.delete({ where: { id } });
   revalidatePath('/admin/holidays');
+  revalidatePath('/booking');
 }
